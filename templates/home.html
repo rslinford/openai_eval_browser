@@ -5,19 +5,33 @@
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-<h2>Sub-title</h2>
 <form action="/" method="post">
     <div class="flex">
-        <label for="data">Data: </label>
-        <select id="data" name="data" style="width: 200px;">
+        <label for="sub_dir">Data directory: </label>
+        <select id="sub_dir" name="sub_dir" style="width: 200px;">
             {% for sub_dir in sub_dirs %}
                 <option>{{ sub_dir }}</option>
             {% endfor %}
         </select>
     </div>
     <div class="flex">
+        <label for="sample">Samples: </label>
+        <select id="sample" name="sample" size="5">
+            {% for sample in samples %}
+                <option>{{ sample }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    {% for message in sample['input'] %}
+        <div class="flex">
+            <input type="text" style="width: 80px; margin-right: 10px;" value="{{ message['role'] }}" readonly/>
+            <textarea rows="1" cols="100" readonly>{{ message['content'] }}</textarea>
+        </div>
+    {% endfor %}
+    <div class="flex">
         <input type="submit" id="Go" name="Go" class="button_margin" value="Go">
     </div>
 </form>
+
 </body>
 </html>
