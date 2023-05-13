@@ -30,7 +30,7 @@
     </script>
     <div class="flex">
         <label for="sample">Samples: </label>
-        <select id="sample" name="sample" onchange="document.getElementById('main_form').submit()">
+        <select id="sample" name="sample" onchange="document.getElementById('main_form').submit()" autofocus>
             {% for sample in samples %}
                 <option value="{{ loop.index0 }}">{{ sample }}</option>
             {% endfor %}

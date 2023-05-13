@@ -1,8 +1,12 @@
 import json
 import os
-from flask import Flask, render_template, request
+
+from flask import Flask, render_template, request, session
 
 app = Flask(__name__)
+
+# Flask's secret key to make session available.
+app.secret_key = "tDedFRLONdrOuhGdfgddfds"
 
 root_dir = '../evals/evals/registry/data'
 samples_filename = 'samples.jsonl'
@@ -42,9 +46,20 @@ def home_post():
     # get the subdirectories in the root directory
     sub_dirs = read_sub_dirs()
     sub_dir = request.form['sub_dir']
+    if 'sub_dir' in session:
+        sub_dir_unchanged = session['sub_dir'] == sub_dir
+    else:
+        sub_dir_unchanged = True
+    session['sub_dir'] = sub_dir
+    session.modified = True
+
     samples = load_samples(sub_dir)
 
-    sample_index = int(request.form['sample'])
+    if sub_dir_unchanged:
+        sample_index = int(request.form['sample'])
+    else:
+        sample_index = 0
+
     sample = json.loads(samples[sample_index])
 
     return render_template('home.html',
