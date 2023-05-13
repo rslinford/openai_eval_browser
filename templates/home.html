@@ -54,9 +54,14 @@
         <textarea rows="1" cols="100" readonly>{{ sample['ideal'] }}</textarea>
     </div>
     <div class="flex">
-        <input type="submit" id="Go" name="Go" class="button_margin" value="Go">
+        <input type="submit" name="Prompt" class="button_margin" value="Prompt">
     </div>
 </form>
+<h2 id="response">Response</h2>
+<label for="assistant_response">Assistant Response:</label>
+<textarea id="assistant_response" rows="3" cols="100" readonly>{{ assistant_response }}</textarea>
+<label for="finish_reason" class="nowrap">Result Message:</label>
+<input type="text" id="finish_reason" value="{{ finish_reason }}" readonly/>
 <script>
     (function () {
         const textareas = document.getElementsByTagName("textarea");

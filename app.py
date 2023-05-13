@@ -1,12 +1,18 @@
 import json
 import os
 
+import openai
 from flask import Flask, render_template, request, session
 
 app = Flask(__name__)
 
+
+with open("api_key.txt", "r") as file:
+    openai.api_key = file.read().strip()
+
 # Flask's secret key to make session available.
-app.secret_key = "tDedFRLONdrOuhGdfgddfds"
+app.secret_key = openai.api_key
+
 
 root_dir = '../evals/evals/registry/data'
 samples_filename = 'samples.jsonl'
@@ -16,7 +22,7 @@ def load_samples(sub_dir_filename):
     samples_full_filename = os.path.join(root_dir, sub_dir_filename, samples_filename)
 
     samples = []
-    with open(samples_full_filename, 'r') as file:
+    with open(samples_full_filename, 'r', encoding='utf-8') as file:
         for line in file:
             samples.append(line.strip())
     return samples
@@ -62,12 +68,33 @@ def home_post():
 
     sample = json.loads(samples[sample_index])
 
+    if 'Prompt' in request.form:
+        try:
+            response = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                messages=sample['input'],
+                temperature=0,
+                top_p=1,
+                max_tokens=2048)
+
+            assistant_response = response['choices'][0]['message']['content']
+            finish_reason = response['choices'][0]['finish_reason']
+            session.modified = True
+        except openai.error.OpenAIError as e:
+            assistant_response = ''
+            finish_reason = str(e)
+    else:
+        assistant_response = ''
+        finish_reason = ''
+
     return render_template('home.html',
                            sub_dirs=sub_dirs,
                            sub_dir=sub_dir,
                            samples=samples,
                            sample_index=sample_index,
-                           sample=sample)
+                           sample=sample,
+                           assistant_response=assistant_response,
+                           finish_reason=finish_reason)
 
 
 if __name__ == '__main__':
