@@ -107,3 +107,12 @@ label {
 .nowrap {
     white-space: nowrap;
 }
+
+#Prompt {
+  cursor: pointer;
+}
+
+#Prompt.disabled {
+  background-color: gray;
+  cursor: default;
+}
