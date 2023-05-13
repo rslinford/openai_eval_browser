@@ -14,14 +14,40 @@
             {% endfor %}
         </select>
     </div>
+    <script>
+        // Preserve selected sub_dir
+        (function () {
+            const select = document.getElementById("sub_dir");
+            const previous_sub_dir = "{{ sub_dir }}";
+            for (let i = 0; i < select.options.length; i++) {
+                const option = select.options[i];
+                if (option.value === previous_sub_dir) {
+                    select.selectedIndex = i;
+                }
+            }
+        })();
+    </script>
     <div class="flex">
         <label for="sample">Samples: </label>
-        <select id="sample" name="sample" size="5">
+        <select id="sample" name="sample">
             {% for sample in samples %}
                 <option>{{ sample }}</option>
             {% endfor %}
         </select>
     </div>
+    <script>
+        // Preserve selected sample
+        (function () {
+            const select = document.getElementById("sample");
+            const previous_sample = "{{ sample }}";
+            for (let i = 0; i < select.options.length; i++) {
+                const option = select.options[i];
+                if (option.value === previous_sample) {
+                    select.selectedIndex = i;
+                }
+            }
+        })();
+    </script>
     {% for message in sample['input'] %}
         <div class="flex">
             <input type="text" style="width: 80px; margin-right: 10px;" value="{{ message['role'] }}" readonly/>
@@ -29,9 +55,20 @@
         </div>
     {% endfor %}
     <div class="flex">
+        <input type="text" style="width: 80px; margin-right: 10px;" value="Ideal" readonly/>
+        <textarea rows="1" cols="100" readonly>{{ sample['ideal'] }}</textarea>
+    </div>
+    <div class="flex">
         <input type="submit" id="Go" name="Go" class="button_margin" value="Go">
     </div>
 </form>
-
+<script>
+    (function () {
+        const textareas = document.getElementsByTagName("textarea");
+        Array.from(textareas).forEach(function (textarea) {
+            textarea.style.height = textarea.scrollHeight + 'px';
+        });
+    })();
+</script>
 </body>
 </html>
