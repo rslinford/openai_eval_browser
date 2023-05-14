@@ -15,7 +15,10 @@ app.secret_key = openai.api_key
 
 
 root_dir = '../evals/evals/registry/data'
+# Default file name for samples. If this file doesn't exist, a sample file will be picked at random.
 samples_filename = 'samples.jsonl'
+# Samples are silently ignored over this max
+MAX_SAMPLES = 3000
 
 
 def load_samples(sub_dir_filename):
@@ -24,7 +27,9 @@ def load_samples(sub_dir_filename):
     samples = []
     try:
         with open(samples_full_filename, 'r', encoding='utf-8') as samples_file:
-            for line in samples_file:
+            for i, line in enumerate(samples_file):
+                if i > MAX_SAMPLES:
+                    break
                 samples.append(line.strip())
     except FileNotFoundError as e:
         # Assume non-standard samples filename
@@ -38,7 +43,6 @@ def load_samples(sub_dir_filename):
             for line in samples_file:
                 samples.append(line.strip())
 
-
     return samples
 
 
@@ -51,7 +55,10 @@ def home():
     # get the subdirectories in the root directory
     sub_dirs = next(os.walk(root_dir))[1]
     first_sub_dir_name = sub_dirs[0]
-    samples = load_samples(first_sub_dir_name)
+    try:
+        samples = load_samples(first_sub_dir_name)
+    except PermissionError:
+        samples = [json.loads('{"input": [{"role": "error", "content": "Failed to load samples"}], "ideal": ""}')]
     first_sample = json.loads(samples[0])
 
     return render_template('home.html',
@@ -70,11 +77,14 @@ def home_post():
     if 'sub_dir' in session:
         sub_dir_unchanged = session['sub_dir'] == sub_dir
     else:
-        sub_dir_unchanged = True
+        sub_dir_unchanged = False
     session['sub_dir'] = sub_dir
     session.modified = True
 
-    samples = load_samples(sub_dir)
+    try:
+        samples = load_samples(sub_dir)
+    except PermissionError:
+        samples = ['{"input": [{"role": "error", "content": "Failed to load samples"}], "ideal": ""}']
 
     if sub_dir_unchanged:
         sample_index = int(request.form['sample'])
@@ -82,6 +92,13 @@ def home_post():
         sample_index = 0
 
     sample = json.loads(samples[sample_index])
+
+    # Validate sample structure
+    try:
+        dummy = sample['input'][0]['role']
+        dummy = sample['ideal']
+    except (TypeError, KeyError):
+        sample = json.loads('{"input": [{"role": "error", "content": "Invalid sample format"}], "ideal": ""}')
 
     if 'Prompt' in request.form:
         try:
