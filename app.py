@@ -53,7 +53,7 @@ def read_sub_dirs():
 @app.route('/', methods=['GET'])
 def home():
     # get the subdirectories in the root directory
-    sub_dirs = next(os.walk(root_dir))[1]
+    sub_dirs = read_sub_dirs()
     first_sub_dir_name = sub_dirs[0]
     try:
         samples = load_samples(first_sub_dir_name)
