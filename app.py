@@ -14,15 +14,15 @@ with open("api_key.txt", "r") as file:
 app.secret_key = openai.api_key
 
 
-root_dir = '../evals/evals/registry/data'
+root_dir = '../openai_evals/evals/registry/data'
 # Default file name for samples. If this file doesn't exist, a sample file will be picked at random.
-samples_filename = 'samples.jsonl'
+default_samples_filename = 'samples.jsonl'
 # Samples are silently ignored over this max
 MAX_SAMPLES = 3000
 
 
 def load_samples(sub_dir_filename):
-    samples_full_filename = os.path.join(root_dir, sub_dir_filename, samples_filename)
+    samples_full_filename = os.path.join(root_dir, sub_dir_filename, default_samples_filename)
 
     samples = []
     try:
@@ -127,6 +127,27 @@ def home_post():
                            sample=sample,
                            assistant_response=assistant_response,
                            finish_reason=finish_reason)
+
+
+class Eval:
+    def __init__(self, name, metrics, eval_class, samples_filename):
+        self.name = name
+        self.metrics = metrics
+        self.eval_class = eval_class
+        self.samples_filename = samples_filename
+
+    @classmethod
+    def from_yaml(cls, yaml_file):
+        name = ''
+        metrics = ''
+        eval_class = ''
+        samples_filename = ''
+        return cls(name, metrics, eval_class, samples_filename)
+
+
+@app.route('/test', methods=['GET'])
+def test():
+    return render_template('test.html')
 
 
 if __name__ == '__main__':
