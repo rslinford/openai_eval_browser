@@ -1,5 +1,6 @@
 import json
 import os
+import re
 
 import openai
 from flask import Flask, render_template, request, session
@@ -14,7 +15,9 @@ with open("api_key.txt", "r") as file:
 app.secret_key = openai.api_key
 
 
-root_dir = '../openai_evals/evals/registry/data'
+registry_dir = '../openai_evals/evals/registry'
+data_dir = os.path.join(registry_dir, 'data')
+evals_dir = os.path.join(registry_dir, 'evals')
 # Default file name for samples. If this file doesn't exist, a sample file will be picked at random.
 default_samples_filename = 'samples.jsonl'
 # Samples are silently ignored over this max
@@ -22,7 +25,7 @@ MAX_SAMPLES = 3000
 
 
 def load_samples(sub_dir_filename):
-    samples_full_filename = os.path.join(root_dir, sub_dir_filename, default_samples_filename)
+    samples_full_filename = os.path.join(data_dir, sub_dir_filename, default_samples_filename)
 
     samples = []
     try:
@@ -33,12 +36,12 @@ def load_samples(sub_dir_filename):
                 samples.append(line.strip())
     except FileNotFoundError as e:
         # Assume non-standard samples filename
-        dir_listing = os.listdir(os.path.join(root_dir, sub_dir_filename))
+        dir_listing = os.listdir(os.path.join(data_dir, sub_dir_filename))
         if len(dir_listing) == 0:
-            raise ValueError(f'Samples not found in {os.path.join(root_dir, sub_dir_filename)}')
+            raise ValueError(f'Samples not found in {os.path.join(data_dir, sub_dir_filename)}')
         if len(dir_listing) > 1:
             print(f'Multiple sample files. Using the first one of: {dir_listing}')
-        samples_full_filename = os.path.join(root_dir, sub_dir_filename, dir_listing[0])
+        samples_full_filename = os.path.join(data_dir, sub_dir_filename, dir_listing[0])
         with open(samples_full_filename, 'r', encoding='utf-8') as samples_file:
             for line in samples_file:
                 samples.append(line.strip())
@@ -47,7 +50,7 @@ def load_samples(sub_dir_filename):
 
 
 def read_sub_dirs():
-    return next(os.walk(root_dir))[1]
+    return next(os.walk(data_dir))[1]
 
 
 @app.route('/', methods=['GET'])
@@ -136,18 +139,32 @@ class Eval:
         self.eval_class = eval_class
         self.samples_filename = samples_filename
 
+    def __repr__(self):
+        return f'Eval(name={self.name}, metrics={self.metrics}, eval_class={self.eval_class}, samples_filename={self.samples_filename})'
+
     @classmethod
     def from_yaml(cls, yaml_file):
-        name = ''
-        metrics = ''
-        eval_class = ''
-        samples_filename = ''
+        with open(yaml_file, 'r', encoding='utf-8') as f:
+            yaml_content = f.read().strip()
+        result = re.search(r'([^:]+):', yaml_content)
+        name = result.group(1)
+        result = re.search(r'metrics:\s*(.+)', yaml_content)
+        metrics = result.group(1)
+        result = re.search(r'class:\s*(.+)', yaml_content)
+        eval_class = result.group(1)
+        result = re.search(r'samples_jsonl:\s*(.+)', yaml_content)
+        samples_filename = result.group(1) if result else ''
         return cls(name, metrics, eval_class, samples_filename)
 
 
 @app.route('/test', methods=['GET'])
 def test():
-    return render_template('test.html')
+    evals = []
+    for f in os.listdir(evals_dir):
+        print(f)
+        evals.append(Eval.from_yaml(os.path.join(evals_dir, f)))
+
+    return render_template('test.html', evals=evals)
 
 
 if __name__ == '__main__':
