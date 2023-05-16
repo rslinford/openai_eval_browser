@@ -133,20 +133,21 @@ def home_post():
 
 
 class Eval:
-    def __init__(self, name, metrics, eval_class, samples_filename):
+    def __init__(self, name, metrics, eval_class, samples_filename, description):
         self.name = name
         self.metrics = metrics
         self.eval_class = eval_class
         self.samples_filename = samples_filename
+        self.description = description
 
     def __repr__(self):
-        return f'Eval(name={self.name}, metrics={self.metrics}, eval_class={self.eval_class}, samples_filename={self.samples_filename})'
+        return f'Eval(name={self.name}, metrics={self.metrics}, eval_class={self.eval_class}, samples_filename={self.samples_filename}, description={self.description})'
 
     @classmethod
     def from_yaml(cls, yaml_file):
         with open(yaml_file, 'r', encoding='utf-8') as f:
             yaml_content = f.read().strip()
-        result = re.search(r'([^:]+):', yaml_content)
+        result = re.search(r'([^# ][^:]*):', yaml_content)
         name = result.group(1)
         result = re.search(r'metrics:\s*(.+)', yaml_content)
         metrics = result.group(1)
@@ -154,17 +155,37 @@ class Eval:
         eval_class = result.group(1)
         result = re.search(r'samples_jsonl:\s*(.+)', yaml_content)
         samples_filename = result.group(1) if result else ''
-        return cls(name, metrics, eval_class, samples_filename)
+        result = re.search(r'description:\s*(.+)', yaml_content)
+        description = result.group(1) if result else ''
+        return cls(name, metrics, eval_class, samples_filename, description)
+
+
+def load_evals():
+    evals = []
+    for f in os.listdir(evals_dir):
+        evals.append(Eval.from_yaml(os.path.join(evals_dir, f)))
+    return evals
 
 
 @app.route('/test', methods=['GET'])
 def test():
-    evals = []
-    for f in os.listdir(evals_dir):
-        print(f)
-        evals.append(Eval.from_yaml(os.path.join(evals_dir, f)))
+    evals = load_evals()
+    return render_template('test.html',
+                           evals=evals,
+                           selected_eval=evals[0])
 
-    return render_template('test.html', evals=evals)
+
+@app.route('/test', methods=['POST'])
+def test_post():
+    selected_eval_name = request.form['eval_name']
+    evals = load_evals()
+    selected_eval = evals[0]
+    for e in evals:
+        if e.name == selected_eval_name:
+            selected_eval = e
+    return render_template('test.html',
+                           evals=evals,
+                           selected_eval=selected_eval)
 
 
 if __name__ == '__main__':

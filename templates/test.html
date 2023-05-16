@@ -6,8 +6,44 @@
 </head>
 <body>
 <h3>Test</h3>
-{% for eval in evals %}
-    <p>{{ eval }}</p>
-{% endfor %}
+<form action="/test" method="post" id="main_form">
+<div class="flex">
+    <label for="eval_name" class="nowrap">Eval name: </label>
+    <select id="eval_name" name="eval_name" onchange="document.getElementById('main_form').submit()" autofocus>
+        {% for eval in evals %}
+            <option>{{ eval.name }}</option>
+        {% endfor %}
+    </select>
+</div>
+<div class="flex">
+    <label for="metrics" class="nowrap">Metrics:</label>
+    <input type="text" id="metrics" value="{{ selected_eval.metrics }}" readonly/>
+</div>
+<div class="flex">
+    <label for="eval_class" class="nowrap">Class:</label>
+    <input type="text" id="eval_class" value="{{ selected_eval.eval_class }}" readonly/>
+</div>
+<div class="flex">
+    <label for="samples_filename" class="nowrap">Samples:</label>
+    <input type="text" id="samples_filename" value="{{ selected_eval.samples_filename }}" readonly/>
+</div>
+<div class="flex">
+    <label for="description" class="nowrap">Description:</label>
+    <input type="text" id="description" value="{{ selected_eval.description }}" readonly/>
+</div>
+</form>
+    <script>
+        // Preserve selected sub_dir
+        (function () {
+            const select = document.getElementById("eval_name");
+            const previous_sub_dir = "{{ selected_eval.name }}";
+            for (let i = 0; i < select.options.length; i++) {
+                const option = select.options[i];
+                if (option.value === previous_sub_dir) {
+                    select.selectedIndex = i;
+                }
+            }
+        })();
+    </script>
 </body>
 </html>
