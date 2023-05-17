@@ -1,19 +1,17 @@
 import json
 import os
-import re
 
 import openai
+import yaml
 from flask import Flask, render_template, request, session
 
 app = Flask(__name__)
-
 
 with open("api_key.txt", "r") as file:
     openai.api_key = file.read().strip()
 
 # Flask's secret key to make session available.
 app.secret_key = openai.api_key
-
 
 registry_dir = '../openai_evals/evals/registry'
 data_dir = os.path.join(registry_dir, 'data')
@@ -132,60 +130,19 @@ def home_post():
                            finish_reason=finish_reason)
 
 
-class Eval:
-    def __init__(self, name, metrics, eval_class, samples_filename, description):
-        self.name = name
-        self.metrics = metrics
-        self.eval_class = eval_class
-        self.samples_filename = samples_filename
-        self.description = description
-
-    def __repr__(self):
-        return f'Eval(name={self.name}, metrics={self.metrics}, eval_class={self.eval_class}, samples_filename={self.samples_filename}, description={self.description})'
-
-    @classmethod
-    def from_yaml(cls, yaml_file):
-        with open(yaml_file, 'r', encoding='utf-8') as f:
-            yaml_content = f.read().strip()
-        result = re.search(r'([^# ][^:]*):', yaml_content)
-        name = result.group(1)
-        result = re.search(r'metrics:\s*(.+)', yaml_content)
-        metrics = result.group(1)
-        result = re.search(r'class:\s*(.+)', yaml_content)
-        eval_class = result.group(1)
-        result = re.search(r'samples_jsonl:\s*(.+)', yaml_content)
-        samples_filename = result.group(1) if result else ''
-        result = re.search(r'description:\s*(.+)', yaml_content)
-        description = result.group(1) if result else ''
-        return cls(name, metrics, eval_class, samples_filename, description)
+def load_registry():
+    registry = {}
+    for d in os.listdir(evals_dir):
+        with open(os.path.join(evals_dir, d), 'r', encoding='utf-8') as f:
+            registry.update(yaml.load(f, Loader=yaml.FullLoader))
+    return registry
 
 
-def load_evals():
-    evals = []
-    for f in os.listdir(evals_dir):
-        evals.append(Eval.from_yaml(os.path.join(evals_dir, f)))
-    return evals
-
-
-@app.route('/test', methods=['GET'])
-def test():
-    evals = load_evals()
-    return render_template('test.html',
-                           evals=evals,
-                           selected_eval=evals[0])
-
-
-@app.route('/test', methods=['POST'])
-def test_post():
-    selected_eval_name = request.form['eval_name']
-    evals = load_evals()
-    selected_eval = evals[0]
-    for e in evals:
-        if e.name == selected_eval_name:
-            selected_eval = e
-    return render_template('test.html',
-                           evals=evals,
-                           selected_eval=selected_eval)
+@app.route('/registry', methods=['GET'])
+def registry_get():
+    registry = load_registry()
+    return render_template('registry.html',
+                           registry=registry)
 
 
 if __name__ == '__main__':

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <title>Eval Registry</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<h3>Registry</h3>
+
+{% macro render_node(node) %}
+    <ul style="line-height: 1.5; list-style: none; font-weight: normal;">
+        {% for k, v in node.items() %}
+            {% if v is mapping %}
+                <li>{{ k }}</li>
+                <li>{{ render_node(v) }}</li>
+            {% else %}
+                <li>{{ k }}=<b style="color: #778899;">{{ v }}</b></li>
+            {% endif %}
+        {% endfor %}
+    </ul>
+{% endmacro %}
+
+<h1>Tree Structure</h1>
+{{ render_node(registry) }}
+
+</body>
+</html>
