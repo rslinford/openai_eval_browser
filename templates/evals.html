@@ -53,6 +53,9 @@
         select.selectedIndex = "{{ sample_index }}";
     })();
 </script>
+<div class="flex">
+    <input type="submit" id="Prompt" name="Prompt" class="button_margin" value="Prompt">
+</div>
 </form>
 {% for message in sample['input'] %}
     <div class="flex">
@@ -64,12 +67,31 @@
     <input type="text" style="width: 80px; margin-right: 10px;" value="Ideal" readonly/>
     <textarea rows="1" cols="100" readonly>{{ sample['ideal'] }}</textarea>
 </div>
+<label for="assistant_response">Assistant Response:</label>
+<textarea id="assistant_response" rows="3" cols="100" readonly>{{ assistant_response }}</textarea>
+<label for="finish_reason" class="nowrap">Result Message:</label>
+<input type="text" id="finish_reason" value="{{ finish_reason }}" readonly/>
 <script>
     // Expand textareas to fit their content
     (function () {
         const textareas = document.getElementsByTagName("textarea");
         Array.from(textareas).forEach(function (textarea) {
             textarea.style.height = textarea.scrollHeight + 'px';
+        });
+    })();
+</script>
+<script>
+    // Change appearance of submit button while page is waiting on API call
+    (function () {
+        // Get the submit button element
+        const submitButton = document.getElementById("Prompt");
+        submitButton.addEventListener("click", function () {
+            // Change the button appearance
+            submitButton.classList.add("disabled");
+        });
+        // Change the button back to its original appearance when the page is loaded
+        window.addEventListener("load", function () {
+            submitButton.classList.remove("disabled");
         });
     })();
 </script>

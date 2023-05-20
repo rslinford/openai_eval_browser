@@ -246,13 +246,34 @@ def evals_post():
     except (TypeError, KeyError):
         sample = json.loads('{"input": [{"role": "error", "content": "Non-standard sample format"}], "ideal": ""}')
 
+    if 'Prompt' in request.form:
+        try:
+            response = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                messages=sample['input'],
+                temperature=0,
+                top_p=1,
+                max_tokens=2048)
+
+            assistant_response = response['choices'][0]['message']['content']
+            finish_reason = response['choices'][0]['finish_reason']
+            session.modified = True
+        except openai.error.OpenAIError as e:
+            assistant_response = ''
+            finish_reason = str(e)
+    else:
+        assistant_response = ''
+        finish_reason = ''
+
     return render_template('evals.html',
                            evals=evals,
                            samples=samples,
                            eval_name_index=eval_name_index,
                            sample_index=sample_index,
                            sample=sample,
-                           selected_eval=evals[int(eval_name_index)])
+                           selected_eval=evals[int(eval_name_index)],
+                           assistant_response=assistant_response,
+                           finish_reason=finish_reason)
 
 
 if __name__ == '__main__':
