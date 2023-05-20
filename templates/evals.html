@@ -8,12 +8,28 @@
 <h3>Evals</h3>
 <form action="/evals" method="post" id="main_form">
 <div class="flex">
-    <label for="eval_name" class="nowrap">Eval Name</label>
+    <label for="eval_name" class="nowrap">Eval Name:</label>
     <select id="eval_name" name="eval_name" onchange="document.getElementById('main_form').submit()">
         {% for eval in evals %}
             <option value="{{ loop.index0 }}">{{ eval.name }}</option>
         {% endfor %}
     </select>
+</div>
+<div class="flex">
+    <label for="class">Class:</label>
+    <input type="text" id="class" name="class" value="{{ selected_eval.the_class }}" disabled>
+</div>
+<div class="flex">
+    <label for="metrics">Metrics:</label>
+    <input type="text" id="metrics" name="metrics" value="{{ selected_eval.metrics }}" disabled>
+</div>
+<div class="flex">
+    <label for="eval_type" class="nowrap">Eval Type:</label>
+    <input type="text" id="eval_type" name="eval_type" value="{{ selected_eval.eval_type }}" disabled>
+</div>
+<div class="flex">
+    <label for="modelgraded_spec_file" class="nowrap">Model Graded Spec File:</label>
+    <input type="text" id="eval_type" name="eval_type" value="{{ selected_eval.modelgraded_spec_file }}" disabled>
 </div>
 <script>
     // Preserve selected eval_name

@@ -142,15 +142,17 @@ def home_post():
 
 
 class Eval:
-    def __init__(self, name, the_id, metrics, the_class, samples_jsonl):
+    def __init__(self, name, the_id, metrics, the_class, samples_jsonl, eval_type, modelgraded_spec_file):
         self.name = name
         self.the_id = the_id
         self.metrics = metrics
         self.the_class = the_class
         self.samples_jsonl = samples_jsonl
+        self.eval_type = eval_type
+        self.modelgraded_spec_file = modelgraded_spec_file
 
     def __repr__(self):
-        return f'name({self.name}) id({self.the_id}) metrics({self.metrics}) class({self.the_class}) samples_jsonl({self.samples_jsonl}) '
+        return f'name({self.name}) id({self.the_id}) metrics({self.metrics}) class({self.the_class}) samples_jsonl({self.samples_jsonl}) eval_type({self.eval_type}) modelgraded_spec_file({self.modelgraded_spec_file})'
 
 
 def load_evals():
@@ -161,6 +163,8 @@ def load_evals():
             metrics = ''
             the_class = ''
             samples_jsonl = ''
+            eval_type = ''
+            modelgraded_spec_file = ''
             the_id = v['id']
             if 'metrics' in v:
                 metrics = v['metrics']
@@ -170,7 +174,11 @@ def load_evals():
             args = sub_item['args']
             if 'samples_jsonl' in args:
                 samples_jsonl = args['samples_jsonl']
-            evals.append(Eval(k, the_id, metrics, the_class, samples_jsonl))
+            if 'eval_type' in args:
+                eval_type = args['eval_type']
+            if 'modelgraded_spec_file' in args:
+                modelgraded_spec_file = args['modelgraded_spec_file']
+            evals.append(Eval(k, the_id, metrics, the_class, samples_jsonl, eval_type, modelgraded_spec_file))
     return evals
 
 
@@ -200,7 +208,8 @@ def evals_get():
                            samples=samples,
                            eval_name_index=0,
                            sample_index=0,
-                           sample=sample)
+                           sample=sample,
+                           selected_eval=evals[0])
 
 
 @app.route('/evals', methods=['POST'])
@@ -242,7 +251,8 @@ def evals_post():
                            samples=samples,
                            eval_name_index=eval_name_index,
                            sample_index=sample_index,
-                           sample=sample)
+                           sample=sample,
+                           selected_eval=evals[int(eval_name_index)])
 
 
 if __name__ == '__main__':
