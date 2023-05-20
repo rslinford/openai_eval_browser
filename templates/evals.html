@@ -16,6 +16,14 @@
     </select>
 </div>
 <div class="flex">
+    <label for="sample">Samples: </label>
+    <select id="sample" name="sample" onchange="document.getElementById('main_form').submit()" autofocus>
+        {% for sample in samples %}
+            <option value="{{ loop.index0 }}">{{ sample }}</option>
+        {% endfor %}
+    </select>
+</div>
+<div class="flex">
     <label for="class">Class:</label>
     <input type="text" id="class" name="class" value="{{ selected_eval.the_class }}" disabled>
 </div>
@@ -38,14 +46,6 @@
         select.selectedIndex = "{{ eval_name_index }}";
     })();
 </script>
-<div class="flex">
-    <label for="sample">Samples: </label>
-    <select id="sample" name="sample" onchange="document.getElementById('main_form').submit()" autofocus>
-        {% for sample in samples %}
-            <option value="{{ loop.index0 }}">{{ sample }}</option>
-        {% endfor %}
-    </select>
-</div>
 <script>
     // Preserve selected sample
     (function () {
