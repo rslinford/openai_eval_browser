@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <title>Evals</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<h3>Evals</h3>
+<form action="/evals" method="post" id="main_form">
+<div class="flex">
+    <label for="eval_name" class="nowrap">Eval Name</label>
+    <select id="eval_name" name="eval_name" onchange="document.getElementById('main_form').submit()">
+        {% for eval in evals %}
+            <option value="{{ loop.index0 }}">{{ eval.name }}</option>
+        {% endfor %}
+    </select>
+</div>
+<script>
+    // Preserve selected eval_name
+    (function () {
+        const select = document.getElementById("eval_name");
+        const previous_eval_name = "{{ eval_name }}";
+        for (let i = 0; i < select.options.length; i++) {
+            const option = select.options[i];
+            if (option.value === previous_eval_name) {
+                select.selectedIndex = i;
+            }
+        }
+    })();
+</script>
+<div class="flex">
+    <label for="sample">Samples: </label>
+    <select id="sample" name="sample" autofocus>
+        {% for sample in samples %}
+            <option value="{{ loop.index0 }}">{{ sample }}</option>
+        {% endfor %}
+    </select>
+</div>
+</form>
+</body>
+</html>

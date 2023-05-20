@@ -22,6 +22,17 @@ default_samples_filename = 'samples.jsonl'
 MAX_SAMPLES = 3000
 
 
+def load_samples_2(samples_filename):
+    samples = []
+    samples_full_filename = os.path.join(data_dir, samples_filename)
+    with open(samples_full_filename, 'r', encoding='utf-8') as f:
+        for i, line in enumerate(f):
+            if i > MAX_SAMPLES:
+                break
+            samples.append(line.strip())
+    return samples
+
+
 def load_samples(sub_dir_filename):
     samples_full_filename = os.path.join(data_dir, sub_dir_filename, default_samples_filename)
 
@@ -130,11 +141,45 @@ def home_post():
                            finish_reason=finish_reason)
 
 
+class Eval:
+    def __init__(self, name, the_id, metrics, the_class, samples_jsonl):
+        self.name = name
+        self.the_id = the_id
+        self.metrics = metrics
+        self.the_class = the_class
+        self.samples_jsonl = samples_jsonl
+
+    def __repr__(self):
+        return f'name({self.name}) id({self.the_id}) metrics({self.metrics}) class({self.the_class}) samples_jsonl({self.samples_jsonl}) '
+
+
+def load_evals():
+    registry = load_registry()
+    evals = []
+    for k, v in registry.items():
+        if 'id' in v:
+            metrics = ''
+            the_class = ''
+            samples_jsonl = ''
+            the_id = v['id']
+            if 'metrics' in v:
+                metrics = v['metrics']
+            sub_item = registry[the_id]
+            if 'class' in sub_item:
+                the_class = sub_item['class']
+            args = sub_item['args']
+            if 'samples_jsonl' in args:
+                samples_jsonl = args['samples_jsonl']
+            evals.append(Eval(k, the_id, metrics, the_class, samples_jsonl))
+    return evals
+
+
 def load_registry():
     registry = {}
     for d in os.listdir(evals_dir):
         with open(os.path.join(evals_dir, d), 'r', encoding='utf-8') as f:
             registry.update(yaml.load(f, Loader=yaml.FullLoader))
+
     return registry
 
 
@@ -143,6 +188,27 @@ def registry_get():
     registry = load_registry()
     return render_template('registry.html',
                            registry=registry)
+
+
+@app.route('/evals', methods=['GET'])
+def evals_get():
+    evals = load_evals()
+    samples = load_samples_2(evals[0].samples_jsonl)
+    return render_template('evals.html',
+                           evals=evals,
+                           samples=samples)
+
+
+@app.route('/evals', methods=['POST'])
+def evals_post():
+    eval_name = request.form['eval_name']
+    sample = request.form['sample']
+    evals = load_evals()
+    samples = load_samples_2(evals[int(eval_name)].samples_jsonl)
+    return render_template('evals.html',
+                           evals=evals,
+                           samples=samples,
+                           eval_name=eval_name)
 
 
 if __name__ == '__main__':
