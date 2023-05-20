@@ -37,13 +37,17 @@
         select.selectedIndex = "{{ sample_index }}";
     })();
 </script>
-<div class="flex">
-    <label for="more">More: </label>
-    <textarea id="more" name="more">
-        {{ sample }}
-    </textarea>
-</div>
 </form>
+{% for message in sample['input'] %}
+    <div class="flex">
+        <input type="text" style="width: 80px; margin-right: 10px;" value="{{ message['role'] }}" readonly/>
+        <textarea rows="1" cols="100" readonly>{{ message['content'] }}</textarea>
+    </div>
+{% endfor %}
+<div class="flex">
+    <input type="text" style="width: 80px; margin-right: 10px;" value="Ideal" readonly/>
+    <textarea rows="1" cols="100" readonly>{{ sample['ideal'] }}</textarea>
+</div>
 <script>
     // Expand textareas to fit their content
     (function () {

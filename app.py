@@ -206,10 +206,37 @@ def evals_get():
 @app.route('/evals', methods=['POST'])
 def evals_post():
     eval_name_index = request.form['eval_name']
-    sample_index = request.form['sample']
+    if 'eval_name_index' in session:
+        eval_name_unchanged = session['eval_name_index'] == eval_name_index
+    else:
+        eval_name_unchanged = False
+    session['eval_name_index'] = eval_name_index
+    session.modified = True
+
+    if eval_name_unchanged:
+        sample_index = request.form['sample']
+    else:
+        sample_index = 0
     evals = load_evals()
-    samples = load_samples_2(evals[int(eval_name_index)].samples_jsonl)
-    sample = json.loads(samples[int(sample_index)])
+    if len(evals[int(eval_name_index)].samples_jsonl) > 0:
+        try:
+            samples = load_samples_2(evals[int(eval_name_index)].samples_jsonl)
+            sample = json.loads(samples[int(sample_index)])
+        except FileNotFoundError:
+            samples = ''
+            sample = json.loads(
+                '{"input": [{"role": "error", "content": "Eval sample file not found"}], "ideal": ""}')
+    else:
+        samples = ''
+        sample = json.loads('{"input": [{"role": "error", "content": "Eval sample file not specified."}], "ideal": ""}')
+
+    # Validate sample structure
+    try:
+        dummy = sample['input'][0]['role']
+        dummy = sample['ideal']
+    except (TypeError, KeyError):
+        sample = json.loads('{"input": [{"role": "error", "content": "Non-standard sample format"}], "ideal": ""}')
+
     return render_template('evals.html',
                            evals=evals,
                            samples=samples,
