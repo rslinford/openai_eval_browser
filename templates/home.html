@@ -61,6 +61,7 @@
 <label for="finish_reason" class="nowrap">Result Message:</label>
 <input type="text" id="finish_reason" value="{{ finish_reason }}" readonly/>
 <script>
+    // Expand textareas to fit their content
     (function () {
         const textareas = document.getElementsByTagName("textarea");
         Array.from(textareas).forEach(function (textarea) {

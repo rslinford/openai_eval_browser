@@ -19,23 +19,39 @@
     // Preserve selected eval_name
     (function () {
         const select = document.getElementById("eval_name");
-        const previous_eval_name = "{{ eval_name }}";
-        for (let i = 0; i < select.options.length; i++) {
-            const option = select.options[i];
-            if (option.value === previous_eval_name) {
-                select.selectedIndex = i;
-            }
-        }
+        select.selectedIndex = "{{ eval_name_index }}";
     })();
 </script>
 <div class="flex">
     <label for="sample">Samples: </label>
-    <select id="sample" name="sample" autofocus>
+    <select id="sample" name="sample" onchange="document.getElementById('main_form').submit()" autofocus>
         {% for sample in samples %}
             <option value="{{ loop.index0 }}">{{ sample }}</option>
         {% endfor %}
     </select>
 </div>
+<script>
+    // Preserve selected sample
+    (function () {
+        const select = document.getElementById("sample");
+        select.selectedIndex = "{{ sample_index }}";
+    })();
+</script>
+<div class="flex">
+    <label for="more">More: </label>
+    <textarea id="more" name="more">
+        {{ sample }}
+    </textarea>
+</div>
 </form>
+<script>
+    // Expand textareas to fit their content
+    (function () {
+        const textareas = document.getElementsByTagName("textarea");
+        Array.from(textareas).forEach(function (textarea) {
+            textarea.style.height = textarea.scrollHeight + 'px';
+        });
+    })();
+</script>
 </body>
 </html>

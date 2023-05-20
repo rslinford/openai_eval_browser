@@ -194,21 +194,28 @@ def registry_get():
 def evals_get():
     evals = load_evals()
     samples = load_samples_2(evals[0].samples_jsonl)
+    sample = json.loads(samples[0])
     return render_template('evals.html',
                            evals=evals,
-                           samples=samples)
+                           samples=samples,
+                           eval_name_index=0,
+                           sample_index=0,
+                           sample=sample)
 
 
 @app.route('/evals', methods=['POST'])
 def evals_post():
-    eval_name = request.form['eval_name']
-    sample = request.form['sample']
+    eval_name_index = request.form['eval_name']
+    sample_index = request.form['sample']
     evals = load_evals()
-    samples = load_samples_2(evals[int(eval_name)].samples_jsonl)
+    samples = load_samples_2(evals[int(eval_name_index)].samples_jsonl)
+    sample = json.loads(samples[int(sample_index)])
     return render_template('evals.html',
                            evals=evals,
                            samples=samples,
-                           eval_name=eval_name)
+                           eval_name_index=eval_name_index,
+                           sample_index=sample_index,
+                           sample=sample)
 
 
 if __name__ == '__main__':
