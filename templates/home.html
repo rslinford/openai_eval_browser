@@ -5,7 +5,7 @@
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-<form action="/" method="post" id="main_form">
+<form action="/home" method="post" id="main_form">
     <div class="flex">
         <label for="sub_dir">Data directory: </label>
         <select id="sub_dir" name="sub_dir" style="width: 200px;" onchange="document.getElementById('main_form').submit()">

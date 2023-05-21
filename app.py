@@ -62,7 +62,7 @@ def read_sub_dirs():
     return next(os.walk(data_dir))[1]
 
 
-@app.route('/', methods=['GET'])
+@app.route('/home', methods=['GET'])
 def home():
     # get the subdirectories in the root directory
     sub_dirs = read_sub_dirs()
@@ -81,7 +81,7 @@ def home():
                            sample=first_sample)
 
 
-@app.route('/', methods=['POST'])
+@app.route('/home', methods=['POST'])
 def home_post():
     # get the subdirectories in the root directory
     sub_dirs = read_sub_dirs()
@@ -198,7 +198,7 @@ def registry_get():
                            registry=registry)
 
 
-@app.route('/evals', methods=['GET'])
+@app.route('/', methods=['GET'])
 def evals_get():
     evals = load_evals()
     samples = load_samples_2(evals[0].samples_jsonl)
@@ -212,7 +212,7 @@ def evals_get():
                            selected_eval=evals[0])
 
 
-@app.route('/evals', methods=['POST'])
+@app.route('/', methods=['POST'])
 def evals_post():
     eval_name_index = request.form['eval_name']
     if 'eval_name_index' in session:

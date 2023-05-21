@@ -5,8 +5,13 @@
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-<h3>Registry</h3>
-
+<header>
+    <div class="menu-container">
+        <a class="nav-item" href="/">Evals</a>
+        <a class="nav-item-active" href="/registry">Registry</a>
+    </div>
+</header>
+<h2>Registry</h2>
 {% macro render_node(node) %}
     <ul style="line-height: 1.5; list-style: none; font-weight: normal;">
         {% for k, v in node.items() %}
@@ -19,9 +24,6 @@
         {% endfor %}
     </ul>
 {% endmacro %}
-
-<h1>Tree Structure</h1>
 {{ render_node(registry) }}
-
 </body>
 </html>

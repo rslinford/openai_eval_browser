@@ -5,8 +5,14 @@
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-<h3>Evals</h3>
-<form action="/evals" method="post" id="main_form">
+<header>
+    <div class="menu-container">
+        <a class="nav-item-active" href="/">Evals</a>
+        <a class="nav-item" href="/registry">Registry</a>
+    </div>
+</header>
+<h2>Evals</h2>
+<form action="/" method="post" id="main_form">
 <div class="flex">
     <label for="eval_name" class="nowrap">Eval Name:</label>
     <select id="eval_name" name="eval_name" onchange="document.getElementById('main_form').submit()">
