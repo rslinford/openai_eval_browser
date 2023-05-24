@@ -22,7 +22,7 @@ default_samples_filename = 'samples.jsonl'
 MAX_SAMPLES = 3000
 
 
-def load_samples_2(samples_filename):
+def load_samples(samples_filename):
     samples = []
     samples_full_filename = os.path.join(data_dir, samples_filename)
     with open(samples_full_filename, 'r', encoding='utf-8') as f:
@@ -30,31 +30,6 @@ def load_samples_2(samples_filename):
             if i > MAX_SAMPLES:
                 break
             samples.append(line.strip())
-    return samples
-
-
-def load_samples(sub_dir_filename):
-    samples_full_filename = os.path.join(data_dir, sub_dir_filename, default_samples_filename)
-
-    samples = []
-    try:
-        with open(samples_full_filename, 'r', encoding='utf-8') as samples_file:
-            for i, line in enumerate(samples_file):
-                if i > MAX_SAMPLES:
-                    break
-                samples.append(line.strip())
-    except FileNotFoundError as e:
-        # Assume non-standard samples filename
-        dir_listing = os.listdir(os.path.join(data_dir, sub_dir_filename))
-        if len(dir_listing) == 0:
-            raise ValueError(f'Samples not found in {os.path.join(data_dir, sub_dir_filename)}')
-        if len(dir_listing) > 1:
-            print(f'Multiple sample files. Using the first one of: {dir_listing}')
-        samples_full_filename = os.path.join(data_dir, sub_dir_filename, dir_listing[0])
-        with open(samples_full_filename, 'r', encoding='utf-8') as samples_file:
-            for line in samples_file:
-                samples.append(line.strip())
-
     return samples
 
 
@@ -80,26 +55,35 @@ def load_evals():
     registry = load_registry()
     evals = []
     for k, v in registry.items():
-        if 'id' in v:
-            metrics = ''
-            the_class = ''
-            samples_jsonl = ''
-            eval_type = ''
-            modelgraded_spec_file = ''
-            the_id = v['id']
-            if 'metrics' in v:
-                metrics = v['metrics']
-            sub_item = registry[the_id]
-            if 'class' in sub_item:
-                the_class = sub_item['class']
-            args = sub_item['args']
-            if 'samples_jsonl' in args:
-                samples_jsonl = args['samples_jsonl']
-            if 'eval_type' in args:
-                eval_type = args['eval_type']
-            if 'modelgraded_spec_file' in args:
-                modelgraded_spec_file = args['modelgraded_spec_file']
-            evals.append(Eval(k, the_id, metrics, the_class, samples_jsonl, eval_type, modelgraded_spec_file))
+        if 'id' not in v:
+            continue
+        metrics = ''
+        the_class = ''
+        samples_jsonl = ''
+        eval_type = ''
+        modelgraded_spec_file = ''
+        the_id = v['id']
+        if 'metrics' in v:
+            metrics = v['metrics']
+        sub_item = registry[the_id]
+        if 'class' in sub_item:
+            the_class = sub_item['class']
+        if 'args' not in sub_item:
+            # Skip this one. No args means no samples file.
+            print(f'No "args" found. Skipping Eval {k}')
+            continue
+        args = sub_item['args']
+        if 'samples_jsonl' in args:
+            samples_jsonl = args['samples_jsonl']
+        if 'eval_type' in args:
+            eval_type = args['eval_type']
+        if 'modelgraded_spec_file' in args:
+            modelgraded_spec_file = args['modelgraded_spec_file']
+        # modelgraded_spec_file has been renamed recently to modelgraded_spec so both are still in use.
+        if 'modelgraded_spec' in args:
+            modelgraded_spec_file = args['modelgraded_spec']
+
+        evals.append(Eval(k, the_id, metrics, the_class, samples_jsonl, eval_type, modelgraded_spec_file))
     return evals
 
 
@@ -122,7 +106,7 @@ def registry_get():
 @app.route('/', methods=['GET'])
 def evals_get():
     evals = load_evals()
-    samples = load_samples_2(evals[0].samples_jsonl)
+    samples = load_samples(evals[0].samples_jsonl)
     sample = json.loads(samples[0])
     return render_template('evals.html',
                            evals=evals,
@@ -150,7 +134,7 @@ def evals_post():
     evals = load_evals()
     if len(evals[int(eval_name_index)].samples_jsonl) > 0:
         try:
-            samples = load_samples_2(evals[int(eval_name_index)].samples_jsonl)
+            samples = load_samples(evals[int(eval_name_index)].samples_jsonl)
             sample = json.loads(samples[int(sample_index)])
         except FileNotFoundError:
             samples = ''
