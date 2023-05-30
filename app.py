@@ -13,7 +13,7 @@ with open("api_key.txt", "r") as file:
 # Flask's secret key to make session available.
 app.secret_key = openai.api_key
 
-registry_dir = '../openai_evals/evals/registry'
+registry_dir = '../evals/evals/registry'
 data_dir = os.path.join(registry_dir, 'data')
 evals_dir = os.path.join(registry_dir, 'evals')
 # Default file name for samples. If this file doesn't exist, a sample file will be picked at random.
