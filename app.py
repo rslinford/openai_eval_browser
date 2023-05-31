@@ -89,11 +89,19 @@ def load_evals():
 
 def load_registry():
     registry = {}
+    # Note that Python dictionaries remember the order items were inserted. Here we load the registry file by file.
+    # Each file contains one or more evals. The sort order gets messed up here because a single file can contain
+    # multiple evals, the names of which don't have to match the file name.
     for d in os.listdir(evals_dir):
         with open(os.path.join(evals_dir, d), 'r', encoding='utf-8') as f:
             registry.update(yaml.load(f, Loader=yaml.FullLoader))
 
-    return registry
+    # Sort the registry.
+    sorted_registry = {}
+    for k in sorted(registry.keys()):
+        sorted_registry[k] = registry.get(k)
+
+    return sorted_registry
 
 
 @app.route('/registry', methods=['GET'])
