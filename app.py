@@ -154,7 +154,7 @@ def evals_post():
     if 'Prompt' in request.form:
         try:
             response = openai.ChatCompletion.create(
-                model="gpt-3.5-turbo",
+                model="gpt-4",
                 messages=sample['input'],
                 temperature=0,
                 top_p=1,
