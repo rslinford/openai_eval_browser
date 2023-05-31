@@ -96,7 +96,7 @@ def load_registry():
         with open(os.path.join(evals_dir, d), 'r', encoding='utf-8') as f:
             registry.update(yaml.load(f, Loader=yaml.FullLoader))
 
-    # Sort the registry.
+    # Sort the registry
     sorted_registry = {}
     for k in sorted(registry.keys()):
         sorted_registry[k] = registry.get(k)
